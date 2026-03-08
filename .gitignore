@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+
+# macOS
+.DS_Store
+
+# Logs
+voiceflow.log
+
+# IDE
+.idea/
+.vscode/
+
+# HuggingFace cache (models downloaded at runtime)
+*.mlx/

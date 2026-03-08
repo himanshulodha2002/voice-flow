@@ -1,0 +1,46 @@
+# VoiceFlow configuration
+# All values here can be changed without touching code.
+
+[audio]
+sample_rate = 16_000          # Hz — Whisper expects 16kHz mono
+block_size = 1024             # Audio callback block size
+max_record_seconds = 30       # Safety cap per recording
+min_record_seconds = 0.3      # Ignore quick taps shorter than this
+silence_rms_threshold = 0.003 # RMS below this = silence → discard
+
+[whisper]
+model = "mlx-community/whisper-small.en-mlx"
+revision = "52a88bf6e98b114a210c21bb83e22d6e1505cb73"
+language = "en"
+
+[rewriter]
+model = "mlx-community/Qwen3.5-0.8B-4bit"
+revision = "da28692b5f139cb0ec58a356b437486b7dac7462"
+max_tokens = 150
+system_prompt = """\
+You are a dictation cleanup assistant. \
+Fix the transcribed speech: remove filler words (um, uh, like, you know, so, basically), \
+add proper punctuation and capitalization, fix obvious grammar errors. \
+Keep the original meaning and wording. Do NOT add, explain, or comment. \
+Output ONLY the cleaned text, nothing else."""
+
+# Max ratio of cleaned-to-raw length before falling back to raw text
+max_length_ratio = 2.0
+# Minimum word overlap ratio between raw and cleaned (prompt-injection guard)
+min_word_overlap = 0.2
+
+[hotkey]
+key = "Key.alt_r"  # pynput key name — Right Option
+
+[paste]
+clipboard_clear_delay = 2.0  # seconds after paste to wipe clipboard
+
+[spoken_commands]
+"new paragraph" = "\n\n"
+"new line" = "\n"
+"newline" = "\n"
+"period" = "."
+"comma" = ","
+"question mark" = "?"
+"exclamation mark" = "!"
+"exclamation point" = "!"
