@@ -27,10 +27,11 @@ Output ONLY the cleaned text, nothing else."""
 # Max ratio of cleaned-to-raw length before falling back to raw text
 max_length_ratio = 2.0
 # Minimum word overlap ratio between raw and cleaned (prompt-injection guard)
-min_word_overlap = 0.2
+min_word_overlap = 0.5
 
 [hotkey]
-key = "Key.alt_r"  # pynput key name — Right Option
+key = "Key.cmd"
+modifier = "Key.ctrl"  # Hold Control (⌃) + Command (⌘) to dictate
 
 [paste]
 clipboard_clear_delay = 2.0  # seconds after paste to wipe clipboard
