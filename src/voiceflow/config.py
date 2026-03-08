@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import tomllib
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 
 _DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent.parent.parent / "config.toml"
@@ -44,6 +44,7 @@ class RewriterConfig:
 @dataclass(frozen=True, slots=True)
 class HotkeyConfig:
     key: str = "Key.alt_r"
+    modifier: str = ""  # optional modifier key (e.g. "Key.alt"); empty = no modifier required
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,11 +71,15 @@ def load_config(path: Path | None = None) -> Config:
     with open(config_path, "rb") as f:
         raw = tomllib.load(f)
 
+    def _load(cls, section: str):
+        valid = {f.name for f in fields(cls)}
+        return cls(**{k: v for k, v in raw.get(section, {}).items() if k in valid})
+
     return Config(
-        audio=AudioConfig(**{k: v for k, v in raw.get("audio", {}).items() if k in AudioConfig.__dataclass_fields__}),
-        whisper=WhisperConfig(**{k: v for k, v in raw.get("whisper", {}).items() if k in WhisperConfig.__dataclass_fields__}),
-        rewriter=RewriterConfig(**{k: v for k, v in raw.get("rewriter", {}).items() if k in RewriterConfig.__dataclass_fields__}),
-        hotkey=HotkeyConfig(**{k: v for k, v in raw.get("hotkey", {}).items() if k in HotkeyConfig.__dataclass_fields__}),
-        paste=PasteConfig(**{k: v for k, v in raw.get("paste", {}).items() if k in PasteConfig.__dataclass_fields__}),
+        audio=_load(AudioConfig, "audio"),
+        whisper=_load(WhisperConfig, "whisper"),
+        rewriter=_load(RewriterConfig, "rewriter"),
+        hotkey=_load(HotkeyConfig, "hotkey"),
+        paste=_load(PasteConfig, "paste"),
         spoken_commands=raw.get("spoken_commands", {}),
     )

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 from voiceflow.config import RewriterConfig
 
 
@@ -10,25 +13,24 @@ class TextRewriter:
 
     def __init__(self, cfg: RewriterConfig) -> None:
         self._cfg = cfg
-        self._model = None
-        self._tokenizer = None
+        self._model: Any = None
+        self._tokenizer: Any = None
+        self._generate: Callable[..., str] | None = None
 
     def warmup(self) -> None:
-        from mlx_lm import generate, load
+        from mlx_lm import load, generate
 
-        print(f"  Warming up rewrite LLM ({self._cfg.model})...")
+        print(f"  Loading rewrite LLM ({self._cfg.model})...", flush=True)
         kwargs: dict = {}
         if self._cfg.revision:
             kwargs["revision"] = self._cfg.revision
         self._model, self._tokenizer = load(self._cfg.model, **kwargs)
-        # Dummy generation to compile MLX graph
-        generate(self._model, self._tokenizer, prompt="Hello", max_tokens=5, verbose=False)
+        self._generate = generate
+        print("  Rewrite LLM ready.", flush=True)
 
     def rewrite(self, raw_text: str) -> str:
         if not raw_text or not raw_text.strip():
             return ""
-
-        from mlx_lm import generate
 
         messages = [
             {"role": "system", "content": self._cfg.system_prompt},
@@ -39,7 +41,7 @@ class TextRewriter:
             enable_thinking=False,
         )
 
-        output = generate(
+        output = self._generate(
             self._model,
             self._tokenizer,
             prompt=prompt,
@@ -67,7 +69,7 @@ class TextRewriter:
             "rm -", "sudo ", "curl ", "wget ", "chmod ", "mkfs",
             "; drop ", "<script", "javascript:", "eval(", "exec(",
             "import os", "import subprocess", "__import__",
-            "http://", "https://",
+            "http://", "https://", "ftp://", "file://", "data:",
         ]
         for pat in suspicious_patterns:
             if pat in cleaned_lower and pat not in raw_lower:

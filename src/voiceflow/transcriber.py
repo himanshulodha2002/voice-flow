@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import ModuleType
+
 import numpy as np
 
 from voiceflow.config import WhisperConfig
@@ -12,28 +14,29 @@ class SpeechTranscriber:
 
     def __init__(self, cfg: WhisperConfig) -> None:
         self._cfg = cfg
+        self._mlx_whisper: ModuleType | None = None
 
     def warmup(self) -> None:
         import mlx_whisper
+        self._mlx_whisper = mlx_whisper
 
-        print(f"  Warming up Whisper ({self._cfg.model})...")
+        print(f"  Loading Whisper ({self._cfg.model})...", flush=True)
         silence = np.zeros(16_000, dtype=np.float32)
-        mlx_whisper.transcribe(
-            silence,
-            path_or_hf_repo=self._cfg.model,
-            language=self._cfg.language,
-        )
+        self._transcribe(silence)
+        print("  Whisper ready.", flush=True)
 
     def transcribe(self, audio: np.ndarray) -> str:
-        import mlx_whisper
+        return self._transcribe(audio)
 
-        kwargs: dict = dict(
+    def _transcribe(self, audio: np.ndarray) -> str:
+        kwargs: dict = {}
+        if self._cfg.revision:
+            kwargs["revision"] = self._cfg.revision
+        result = self._mlx_whisper.transcribe(
+            audio,
             path_or_hf_repo=self._cfg.model,
             language=self._cfg.language,
             condition_on_previous_text=False,
+            **kwargs,
         )
-        if self._cfg.revision:
-            kwargs["revision"] = self._cfg.revision
-
-        result = mlx_whisper.transcribe(audio, **kwargs)
         return result.get("text", "").strip()
