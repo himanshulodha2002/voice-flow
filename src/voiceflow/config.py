@@ -44,12 +44,18 @@ class RewriterConfig:
 @dataclass(frozen=True, slots=True)
 class HotkeyConfig:
     key: str = "Key.alt_r"
-    modifier: str = ""  # optional modifier key (e.g. "Key.alt"); empty = no modifier required
+    modifier: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class ToggleHotkeyConfig:
+    key: str = ""
+    modifier: str = ""
 
 
 @dataclass(frozen=True, slots=True)
 class PasteConfig:
-    clipboard_clear_delay: float = 2.0
+    clipboard_restore_delay: float = 0.5
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +64,7 @@ class Config:
     whisper: WhisperConfig = field(default_factory=WhisperConfig)
     rewriter: RewriterConfig = field(default_factory=RewriterConfig)
     hotkey: HotkeyConfig = field(default_factory=HotkeyConfig)
+    hotkey_toggle: ToggleHotkeyConfig = field(default_factory=ToggleHotkeyConfig)
     paste: PasteConfig = field(default_factory=PasteConfig)
     spoken_commands: dict[str, str] = field(default_factory=dict)
 
@@ -80,6 +87,7 @@ def load_config(path: Path | None = None) -> Config:
         whisper=_load(WhisperConfig, "whisper"),
         rewriter=_load(RewriterConfig, "rewriter"),
         hotkey=_load(HotkeyConfig, "hotkey"),
+        hotkey_toggle=_load(ToggleHotkeyConfig, "hotkey_toggle"),
         paste=_load(PasteConfig, "paste"),
         spoken_commands=raw.get("spoken_commands", {}),
     )

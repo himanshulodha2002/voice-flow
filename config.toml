@@ -33,8 +33,14 @@ min_word_overlap = 0.5
 key = "Key.cmd"
 modifier = "Key.ctrl"  # Hold Control (⌃) + Command (⌘) to dictate
 
+[hotkey_toggle]
+# Toggle mode hotkey (press once to start, press again to stop)
+# Leave key empty to disable toggle mode
+key = ""
+modifier = ""
+
 [paste]
-clipboard_clear_delay = 2.0  # seconds after paste to wipe clipboard
+clipboard_restore_delay = 0.5  # seconds after paste to restore original clipboard
 
 [spoken_commands]
 "new paragraph" = "\n\n"
