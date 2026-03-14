@@ -1,10 +1,10 @@
 # VoiceFlow
 
-Push-to-talk voice typing for macOS Apple Silicon. Hold a hotkey, speak, release — cleaned text is pasted wherever your cursor is. Everything runs 100% on-device.
+macOS menubar app for push-to-talk voice typing on Apple Silicon. Hold a hotkey, speak, release — cleaned text is pasted wherever your cursor is. Everything runs 100% on-device.
 
 **Pipeline:** hotkey → mic → Whisper (transcription) → Qwen LLM (cleanup) → paste
 
-> **RAM:** ~700 MB while running (models resident in GPU memory via MLX).
+> **RAM:** ~700 MB while models are loaded. Use **Unload Models** from the menubar to free GPU memory when not in use.
 
 ## Requirements
 
@@ -28,15 +28,26 @@ Grant permissions when prompted: **Accessibility** and **Microphone** in System 
 uv run python -m voiceflow
 ```
 
-First run downloads models (~1 GB) and caches them locally.
+First run downloads models (~1 GB) and caches them locally. A **VF** icon appears in the menubar.
+
+## Menubar
+
+| Icon | State |
+|---|---|
+| **VF** | Idle — ready for dictation |
+| **VF ●** | Recording |
+| **VF ⟳** | Processing (transcribe + rewrite) |
+| **VF ↓** | Loading models |
+| **VF ○** | Models unloaded |
+
+Menu items: **Load Models** / **Unload Models** / **Show Logs** / **Quit**
 
 ## Usage
 
 | Action | Result |
 |---|---|
-| Hold **⌥⌘** (Option + Command) | Start recording |
+| Hold **⌃⌘** (Control + Command) | Start recording |
 | Release | Transcribe, clean, and paste |
-| **Ctrl+C** | Quit |
 
 You can also say punctuation aloud:
 
@@ -54,15 +65,21 @@ Edit [config.toml](config.toml) — no code changes needed.
 | `[audio]` | recording limits, silence threshold |
 | `[whisper]` | transcription model |
 | `[rewriter]` | cleanup LLM, system prompt, max tokens |
-| `[hotkey]` | trigger key |
-| `[paste]` | clipboard clear delay |
+| `[hotkey]` | push-to-talk trigger key |
+| `[hotkey_toggle]` | toggle mode key (press once to start/stop) |
+| `[paste]` | clipboard restore delay |
+
+## Logs
+
+Logs are written to `~/Library/Logs/VoiceFlow/voiceflow.log` (rotating, 2 MB max). Open via the menubar **Show Logs** item, or:
+
+```bash
+tail -f ~/Library/Logs/VoiceFlow/voiceflow.log
+```
 
 ## LaunchAgent
 
 ```bash
-# Logs
-tail -f ~/personal/voice-flow/voiceflow.log
-
 # Stop
 launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.voiceflow.voicetype.plist
 
