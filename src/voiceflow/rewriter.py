@@ -6,6 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 from voiceflow.config import RewriterConfig
+from voiceflow.log import logger
 
 
 class TextRewriter:
@@ -17,16 +18,26 @@ class TextRewriter:
         self._tokenizer: Any = None
         self._generate: Callable[..., str] | None = None
 
+    @property
+    def is_loaded(self) -> bool:
+        return self._model is not None
+
     def warmup(self) -> None:
         from mlx_lm import load, generate
 
-        print(f"  Loading rewrite LLM ({self._cfg.model})...", flush=True)
+        logger.info("Loading rewrite LLM (%s)...", self._cfg.model)
         kwargs: dict = {}
         if self._cfg.revision:
             kwargs["revision"] = self._cfg.revision
         self._model, self._tokenizer = load(self._cfg.model, **kwargs)
         self._generate = generate
-        print("  Rewrite LLM ready.", flush=True)
+        logger.info("Rewrite LLM ready.")
+
+    def unload(self) -> None:
+        self._model = None
+        self._tokenizer = None
+        self._generate = None
+        logger.info("Rewrite LLM unloaded.")
 
     def rewrite(self, raw_text: str) -> str:
         if not raw_text or not raw_text.strip():

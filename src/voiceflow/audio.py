@@ -6,6 +6,7 @@ import numpy as np
 import sounddevice as sd
 
 from voiceflow.config import AudioConfig
+from voiceflow.log import logger
 
 
 class AudioRecorder:
