@@ -140,15 +140,17 @@ class SystemInterface:
 
         subprocess.run(["pbcopy"], input=text.encode("utf-8"), check=True)
         time.sleep(0.05)
-        from pynput.keyboard import Controller, Key
-
-        kb = Controller()
         self._pasting = True
         try:
-            kb.press(Key.cmd)
-            kb.press("v")
-            kb.release("v")
-            kb.release(Key.cmd)
+            subprocess.run(
+                [
+                    "osascript", "-e",
+                    'tell application "System Events" to keystroke "v" using command down',
+                ],
+                check=True,
+                timeout=3,
+            )
+            time.sleep(0.05)
         finally:
             self._pasting = False
 
