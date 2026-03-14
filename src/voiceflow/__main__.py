@@ -16,6 +16,10 @@ def main() -> None:
         print("Error: VoiceFlow requires macOS.")
         sys.exit(1)
 
+    # Hide from Dock — menubar-only agent app
+    from AppKit import NSBundle
+    NSBundle.mainBundle().infoDictionary()["LSUIElement"] = "1"
+
     setup_logging()
 
     cfg = load_config()
