@@ -6,7 +6,9 @@ import platform
 import sys
 
 from voiceflow.config import load_config
+from voiceflow.log import setup_logging
 from voiceflow.pipeline import VoiceTypePipeline
+from voiceflow.app import VoiceFlowApp
 
 
 def main() -> None:
@@ -14,13 +16,14 @@ def main() -> None:
         print("Error: VoiceFlow requires macOS.")
         sys.exit(1)
 
+    setup_logging()
+
     cfg = load_config()
     pipeline = VoiceTypePipeline(cfg)
-    try:
-        pipeline.run()
-    except KeyboardInterrupt:
-        print("\nShutting down.")
-        pipeline.stop()
+    pipeline.run()  # non-blocking: starts listener + worker + model warmup
+
+    app = VoiceFlowApp(pipeline)
+    app.run()  # blocks on NSRunLoop
 
 
 if __name__ == "__main__":
